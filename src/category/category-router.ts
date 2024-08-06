@@ -22,4 +22,24 @@ router.post(
     asyncWrapper(categoryController.create),
 );
 
+router.patch(
+    "/:id",
+    authenticate,
+    canAccess([Roles.ADMIN]),
+    categoryValidator,
+    asyncWrapper(categoryController.update),
+);
+
+router.delete(
+    "/:id",
+    authenticate,
+    canAccess([Roles.ADMIN]),
+    categoryValidator,
+    asyncWrapper(categoryController.delete),
+);
+
+router.get("/:id", asyncWrapper(categoryController.getOne));
+
+router.get("/", asyncWrapper(categoryController.getAll));
+
 export default router;
