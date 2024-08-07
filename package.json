@@ -49,6 +49,7 @@
         ]
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.624.0",
         "config": "^3.3.12",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
