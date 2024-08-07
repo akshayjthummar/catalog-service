@@ -9,6 +9,8 @@ import { v4 as uuidv4 } from "uuid";
 import { UploadedFile } from "express-fileupload";
 import mongoose from "mongoose";
 import { Logger } from "winston";
+import { AuthRequest } from "../common/types";
+import { Roles } from "../common/constants";
 
 export class ProductController {
     constructor(
@@ -77,18 +79,38 @@ export class ProductController {
             return next(createHttpError(400, "Invalid request"));
         }
 
+        // Check if tenant has access to the product
+        const product = await this.productService.getProduct(productId);
+
+        if (!product) {
+            return next(createHttpError(404, "Product not found"));
+        }
+
+        if (req.auth?.role !== Roles.ADMIN) {
+            const tenant = (req as AuthRequest).auth.tenant;
+
+            if (product.tenantId !== String(tenant)) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You are not allowed to access this product",
+                    ),
+                );
+            }
+        }
+
         let imageName: string | undefined;
         let oldImage: string | undefined;
 
         if (req.files?.image) {
-            oldImage = await this.productService.getProductImage(productId);
+            oldImage = product.image;
             const image = req.files.image as UploadedFile;
             imageName = uuidv4();
             await this.storage.upload({
                 fileName: imageName,
                 fileData: image.data.buffer,
             });
-            await this.storage.delete(oldImage!);
+            await this.storage.delete(oldImage);
         }
 
         const {
@@ -101,7 +123,7 @@ export class ProductController {
             isPublish,
         } = req.body as Product;
 
-        const product = {
+        const productToUpdate = {
             name,
             description,
             priceConfiguration: JSON.parse(priceConfiguration) as string,
@@ -114,7 +136,7 @@ export class ProductController {
 
         const updatedProduct = await this.productService.updateProduct(
             productId,
-            product,
+            productToUpdate,
         );
 
         this.logger.info("Product Updated", { id: updatedProduct?._id });
