@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import { CategoryController } from "./category-controller";
 import { CategoryService } from "./category-service";
 import logger from "../config/logger";
@@ -16,7 +16,7 @@ const categoryController = new CategoryController(categoryService, logger);
 
 router.post(
     "/",
-    authenticate,
+    authenticate as RequestHandler,
     canAccess([Roles.ADMIN]),
     categoryValidator,
     asyncWrapper(categoryController.create),
@@ -24,7 +24,7 @@ router.post(
 
 router.patch(
     "/:id",
-    authenticate,
+    authenticate as RequestHandler,
     canAccess([Roles.ADMIN]),
     categoryValidator,
     asyncWrapper(categoryController.update),
@@ -32,7 +32,7 @@ router.patch(
 
 router.delete(
     "/:id",
-    authenticate,
+    authenticate as RequestHandler,
     canAccess([Roles.ADMIN]),
     categoryValidator,
     asyncWrapper(categoryController.delete),
