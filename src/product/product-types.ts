@@ -6,4 +6,5 @@ export interface Product {
     tenantId: string;
     categoryId: string;
     image: string;
+    isPublish?: boolean;
 }

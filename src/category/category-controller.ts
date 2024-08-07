@@ -10,7 +10,13 @@ export class CategoryController {
     constructor(
         private categoryService: CategoryService,
         private logger: Logger,
-    ) {}
+    ) {
+        this.create = this.create.bind(this);
+        this.update = this.update.bind(this);
+        this.getOne = this.getOne.bind(this);
+        this.getAll = this.getAll.bind(this);
+        this.delete = this.delete.bind(this);
+    }
     async create(req: Request, res: Response, next: NextFunction) {
         const result = validationResult(req);
         if (!result.isEmpty()) {
@@ -37,7 +43,7 @@ export class CategoryController {
         // Call the service
 
         const id = req.params.id;
-        if (!mongoose.isValidObjectId(id)) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return next(createHttpError(400, "invalid request"));
         }
 
@@ -52,7 +58,7 @@ export class CategoryController {
 
     async delete(req: Request, res: Response, next: NextFunction) {
         const id = req.params.id;
-        if (!mongoose.isValidObjectId(id)) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return next(createHttpError(400, "invalid request"));
         }
 
@@ -63,7 +69,7 @@ export class CategoryController {
 
     async getOne(req: Request, res: Response, next: NextFunction) {
         const id = req.params.id;
-        if (!mongoose.isValidObjectId(id)) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return next(createHttpError(400, "invalid request"));
         }
 
