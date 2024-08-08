@@ -1,14 +1,10 @@
 import productModel from "./product-model";
 import ProductModel from "./product-model";
-import { Product } from "./product-types";
+import { Filter, Product } from "./product-types";
 
 export class ProductService {
     async createProduct(product: Product) {
         return await ProductModel.create(product);
-    }
-    async getProductImage(productId: string) {
-        const product = await productModel.findById(productId);
-        return product?.image;
     }
 
     async updateProduct(productId: string, product: Product) {
@@ -21,5 +17,42 @@ export class ProductService {
 
     async getProduct(productId: string): Promise<Product | null> {
         return await productModel.findOne({ _id: productId });
+    }
+
+    async getProducts(q: string, filters: Filter) {
+        const searchQueryRegexp = new RegExp(q, "i");
+        const matchQuery = {
+            ...filters,
+            name: searchQueryRegexp,
+        };
+        const aggregate = ProductModel.aggregate([
+            {
+                $match: matchQuery,
+            },
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "categoryId",
+                    foreignField: "_id",
+                    as: "category",
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                name: 1,
+                                attributes: 1,
+                                priceConfiguration: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: "$category",
+            },
+        ]);
+
+        const result = await aggregate.exec();
+        return result as Product[];
     }
 }
