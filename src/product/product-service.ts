@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import ProductModel from "./product-model";
-import { Filter, Product } from "./product-types";
+import { Filter, PaginateQuery, Product } from "./product-types";
+import { paginationLabels } from "../config/pagination";
 
 export class ProductService {
     async createProduct(product: Product): Promise<Product | null> {
@@ -24,7 +25,11 @@ export class ProductService {
         return await ProductModel.findOne({ _id: productId });
     }
 
-    async getProducts(q: string, filters: Filter) {
+    async getProducts(
+        q: string,
+        filters: Filter,
+        paginateQuery: PaginateQuery,
+    ) {
         const searchQueryRegexp = new RegExp(q, "i");
         const matchQuery = {
             ...filters,
@@ -57,7 +62,9 @@ export class ProductService {
             },
         ]);
 
-        const result = await aggregate.exec();
-        return result as Product[];
+        return ProductModel.aggregatePaginate(aggregate, {
+            ...paginateQuery,
+            customLabels: paginationLabels,
+        });
     }
 }
