@@ -190,4 +190,45 @@ export class ProductController {
             currentPage: products.page,
         });
     };
+
+    getOne = async (req: Request, res: Response, next: NextFunction) => {
+        const productId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return next(createHttpError(400, "Invalid Request"));
+        }
+
+        const product = await this.productService.getProduct(
+            new mongoose.Types.ObjectId(productId),
+        );
+
+        this.logger.info("Get product by id", { id: product?._id });
+
+        res.json(product);
+    };
+
+    delete = async (req: Request, res: Response, next: NextFunction) => {
+        const productId = req.params.id;
+
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return next(createHttpError(400, "Invalid product ID"));
+        }
+
+        const objectId = new mongoose.Types.ObjectId(productId);
+        const deletedProduct = await this.productService.delete(objectId);
+
+        if (!deletedProduct) {
+            return next(createHttpError(404, "Product not found"));
+        }
+
+        if (deletedProduct.image) {
+            await this.storage.delete(deletedProduct.image);
+        }
+
+        this.logger.info("Product deleted", { id: productId });
+
+        res.status(200).json({
+            message: "Product deleted successfully",
+            id: productId,
+        });
+    };
 }

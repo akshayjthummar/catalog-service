@@ -19,10 +19,8 @@ export class ProductService {
         );
     }
 
-    async getProduct(
-        productId: mongoose.Types.ObjectId,
-    ): Promise<Product | null> {
-        return await ProductModel.findOne({ _id: productId });
+    async getProduct(productId: mongoose.Types.ObjectId) {
+        return (await ProductModel.findOne({ _id: productId })) as Product;
     }
 
     async getProducts(
@@ -66,5 +64,11 @@ export class ProductService {
             ...paginateQuery,
             customLabels: paginationLabels,
         });
+    }
+
+    async delete(productId: mongoose.Types.ObjectId) {
+        return (await ProductModel.findByIdAndDelete({
+            _id: productId,
+        })) as Product;
     }
 }
