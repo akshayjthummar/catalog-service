@@ -27,15 +27,20 @@ export class ProductController {
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
-        // Create Product
+
         // Image Upload
-        const image = req.files!.image as UploadedFile;
+        const image = req.files?.image as UploadedFile | undefined;
+        if (!image) {
+            return next(createHttpError(400, "Image is required"));
+        }
+
         const imageName = uuidv4();
         await this.storage.upload({
             fileName: imageName,
-            fileData: image.data.buffer,
+            fileData: image.data,
         });
-        // save product to database
+
+        // Parse and validate the request body
         const {
             name,
             description,
@@ -46,23 +51,22 @@ export class ProductController {
             isPublish,
         } = req.body as Product;
 
-        const product = {
+        const product: Product = {
             name,
             description,
-            priceConfiguration: JSON.parse(priceConfiguration) as string,
-            attributes: JSON.parse(attributes) as string,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            priceConfiguration: JSON.parse(priceConfiguration),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            attributes: JSON.parse(attributes),
             tenantId,
             categoryId,
-            isPublish,
+            isPublish: Boolean(isPublish),
             image: imageName,
         };
-        const newProduct = await this.productService.createProduct(
-            product as Product,
-        );
-        this.logger.info("Product Created", { id: newProduct._id });
 
-        // send response
-        res.json({ id: newProduct._id });
+        const newProduct = await this.productService.createProduct(product);
+        this.logger.info("Product Created", { id: newProduct?._id });
+        res.json({ id: newProduct?._id });
     };
 
     update = async (
@@ -74,11 +78,12 @@ export class ProductController {
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
-        const productId = req.params.id;
-        if (!mongoose.Types.ObjectId.isValid(productId)) {
+        const productIdParam = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(productIdParam)) {
             return next(createHttpError(400, "Invalid request"));
         }
 
+        const productId = new mongoose.Types.ObjectId(productIdParam);
         // Check if tenant has access to the product
         const product = await this.productService.getProduct(productId);
 
@@ -126,17 +131,19 @@ export class ProductController {
         const productToUpdate = {
             name,
             description,
-            priceConfiguration: JSON.parse(priceConfiguration) as string,
-            attributes: JSON.parse(attributes) as string,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            priceConfiguration: JSON.parse(priceConfiguration),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            attributes: JSON.parse(attributes),
             tenantId,
             categoryId,
             isPublish,
-            image: imageName ? imageName : (oldImage as string),
+            image: (imageName as string) ?? (oldImage as string),
         };
 
         const updatedProduct = await this.productService.updateProduct(
             productId,
-            productToUpdate,
+            productToUpdate as Product,
         );
 
         this.logger.info("Product Updated", { id: updatedProduct?._id });

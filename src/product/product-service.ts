@@ -1,22 +1,27 @@
-import productModel from "./product-model";
+import mongoose from "mongoose";
 import ProductModel from "./product-model";
 import { Filter, Product } from "./product-types";
 
 export class ProductService {
-    async createProduct(product: Product) {
+    async createProduct(product: Product): Promise<Product | null> {
         return await ProductModel.create(product);
     }
 
-    async updateProduct(productId: string, product: Product) {
-        return await productModel.findOneAndUpdate(
+    async updateProduct(
+        productId: mongoose.Types.ObjectId,
+        product: Product,
+    ): Promise<Product | null> {
+        return await ProductModel.findOneAndUpdate(
             { _id: productId },
             { $set: product },
             { new: true },
         );
     }
 
-    async getProduct(productId: string): Promise<Product | null> {
-        return await productModel.findOne({ _id: productId });
+    async getProduct(
+        productId: mongoose.Types.ObjectId,
+    ): Promise<Product | null> {
+        return await ProductModel.findOne({ _id: productId });
     }
 
     async getProducts(q: string, filters: Filter) {

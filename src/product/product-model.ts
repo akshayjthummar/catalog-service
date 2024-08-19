@@ -1,6 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { AggregatePaginateModel } from "mongoose";
+import aggregatePaginate from "mongoose-aggregate-paginate-v2";
+import { Product } from "./product-types";
 
-const attributesValueSchema = new mongoose.Schema({
+const attributeValueSchema = new mongoose.Schema({
     name: {
         type: String,
     },
@@ -38,7 +40,7 @@ const productSchema = new mongoose.Schema(
             type: Map,
             of: priceConfigurationSchema,
         },
-        attributes: [attributesValueSchema],
+        attributes: [attributeValueSchema],
         tenantId: {
             type: String,
             required: true,
@@ -49,11 +51,15 @@ const productSchema = new mongoose.Schema(
         },
         isPublish: {
             type: Boolean,
-            default: false,
             required: false,
+            default: false,
         },
     },
     { timestamps: true },
 );
 
-export default mongoose.model("Product", productSchema);
+productSchema.plugin(aggregatePaginate);
+export default mongoose.model<Product, AggregatePaginateModel<Product>>(
+    "Product",
+    productSchema,
+);
