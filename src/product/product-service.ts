@@ -56,7 +56,10 @@ export class ProductService {
                 },
             },
             {
-                $unwind: "$category",
+                $unwind: {
+                    path: "$category",
+                    preserveNullAndEmptyArrays: true,
+                },
             },
         ]);
 

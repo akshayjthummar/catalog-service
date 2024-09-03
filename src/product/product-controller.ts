@@ -183,6 +183,7 @@ export class ProductController {
                 };
             },
         );
+
         res.json({
             data: finalProducts,
             total: products.total,
