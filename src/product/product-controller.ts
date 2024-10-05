@@ -37,7 +37,7 @@ export class ProductController {
         const imageName = uuidv4();
         await this.storage.upload({
             fileName: imageName,
-            fileData: image.data,
+            fileData: image?.data,
         });
 
         // Parse and validate the request body

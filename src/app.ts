@@ -4,8 +4,22 @@ import cookieParser from "cookie-parser";
 import caregoryRouter from "./category/category-router";
 import productRouter from "./product/product-router";
 import toppingRouter from "./topping/topping-router";
+import config from "config";
+import cors from "cors";
 
 const app = express();
+
+const ALLOWED_DOMAINS = [
+    config.get("frontend.clientUI"),
+    config.get("frontend.adminUI"),
+];
+
+app.use(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    cors({
+        origin: ALLOWED_DOMAINS as string[],
+    }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

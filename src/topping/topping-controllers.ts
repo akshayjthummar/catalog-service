@@ -51,10 +51,12 @@ export class ToppingControllers {
 
             const { name, price, tenantId } = req.body as Topping;
 
+            const imagewithurl = this.storage.getObjectUri(imageName);
+
             const toppingObj: Topping = {
                 name,
                 price,
-                image: imageName,
+                image: imagewithurl,
                 tenantId,
             };
 
@@ -105,10 +107,14 @@ export class ToppingControllers {
 
             const { name, price, tenantId } = req.body as Topping;
 
+            const imagewithurl = this.storage.getObjectUri(
+                (imageName as string) || (oldImage as string),
+            );
+
             const toppingObj: Topping = {
                 name,
                 price,
-                image: (imageName as string) || (oldImage as string),
+                image: imagewithurl,
                 tenantId,
             };
 
