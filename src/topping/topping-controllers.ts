@@ -160,7 +160,9 @@ export class ToppingControllers {
         next: NextFunction,
     ): Promise<void> {
         try {
-            const toppings = await this.toppingService.getAllTopping();
+            const toppings = await this.toppingService.getAllTopping(
+                req.query.tenantId as string,
+            );
 
             this.logger.info("Topping Get all");
 

@@ -10,8 +10,8 @@ export class ToppingSevice {
         return (await toppingModel.findOne({ _id: toppingId })) as Topping;
     }
 
-    async getAllTopping() {
-        return await toppingModel.find();
+    async getAllTopping(tenantId: string) {
+        return await toppingModel.find({ tenantId });
     }
 
     async update(toppingId: mongoose.Types.ObjectId, topping: Topping) {
