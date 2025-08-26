@@ -5,10 +5,16 @@ import caregoryRouter from "./category/category-router";
 import productRouter from "./product/product-router";
 import toppingRouter from "./topping/topping-router";
 import cors from "cors";
+import config from "config";
 
 const app = express();
 
-app.use(cors());
+const ALLOWED_DOMAINS = [
+    config.get("domain.ADMIN_UI_DOMAIN"),
+    config.get("domain.CLIENT_UI_DOMAINL"),
+];
+
+app.use(cors({ origin: ALLOWED_DOMAINS as string[], credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
