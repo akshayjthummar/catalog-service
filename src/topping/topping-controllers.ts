@@ -2,7 +2,7 @@ import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
 import { ToppingSevice } from "./topping-service";
 import { Logger } from "winston";
-import { FileStorage } from "../common/types/storage";
+import { bufferToArrayBuffer, FileStorage } from "../common/types/storage";
 import { NextFunction, Request, Response } from "express";
 import { Topping } from "./topping-types";
 import { v4 as uuidV4 } from "uuid";
@@ -46,7 +46,7 @@ export class ToppingControllers {
 
             await this.storage.upload({
                 fileName: imageName,
-                fileData: image?.data,
+                fileData: bufferToArrayBuffer(image?.data),
             });
 
             const { name, price, tenantId } = req.body as Topping;
@@ -100,7 +100,7 @@ export class ToppingControllers {
                 imageName = uuidV4();
                 await this.storage.upload({
                     fileName: imageName,
-                    fileData: image.data.buffer,
+                    fileData: bufferToArrayBuffer(image?.data),
                 });
                 await this.storage.delete(oldImage);
             }

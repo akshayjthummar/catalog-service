@@ -4,7 +4,7 @@ import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
 import { ProductService } from "./product-service";
 import { Filter, Product } from "./product-types";
-import { FileStorage } from "../common/types/storage";
+import { bufferToArrayBuffer, FileStorage } from "../common/types/storage";
 import { v4 as uuidv4 } from "uuid";
 import { UploadedFile } from "express-fileupload";
 import mongoose from "mongoose";
@@ -39,7 +39,7 @@ export class ProductController {
         const imageName = uuidv4();
         await this.storage.upload({
             fileName: imageName,
-            fileData: image?.data,
+            fileData: bufferToArrayBuffer(image?.data),
         });
 
         // Parse and validate the request body
@@ -125,7 +125,7 @@ export class ProductController {
             imageName = uuidv4();
             await this.storage.upload({
                 fileName: imageName,
-                fileData: image.data.buffer,
+                fileData: bufferToArrayBuffer(image?.data),
             });
             await this.storage.delete(oldImage);
         }
