@@ -10,15 +10,18 @@ import { ToppingControllers } from "./topping-controllers";
 import { ToppingSevice } from "./topping-service";
 import { S3Storage } from "../common/services/S3Storage";
 import logger from "../config/logger";
+import { createMessageProducerBroker } from "../common/factories/brokerFactorie";
 
 const router = Router();
 
 const toppingService = new ToppingSevice();
 const storage = new S3Storage();
+const broker = createMessageProducerBroker();
 const toppingControllers = new ToppingControllers(
     toppingService,
     logger,
     storage,
+    broker,
 );
 
 router.post(

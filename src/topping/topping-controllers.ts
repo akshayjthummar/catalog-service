@@ -8,12 +8,14 @@ import { Topping } from "./topping-types";
 import { v4 as uuidV4 } from "uuid";
 import { UploadedFile } from "express-fileupload";
 import mongoose from "mongoose";
+import { MessageProducerBroker } from "../common/types/broker";
 
 export class ToppingControllers {
     constructor(
         private toppingService: ToppingSevice,
         private logger: Logger,
         private storage: FileStorage,
+        private broker: MessageProducerBroker,
     ) {
         // Bind the methods in the constructor
         this.create = this.create.bind(this);
@@ -63,6 +65,14 @@ export class ToppingControllers {
             const topping = await this.toppingService.create(toppingObj);
 
             this.logger.info("Topping created", { id: topping._id });
+
+            await this.broker.sendMessage(
+                "topping",
+                JSON.stringify({
+                    id: topping?._id,
+                    price: topping?.price,
+                }),
+            );
 
             res.json(topping);
         } catch (error) {
@@ -124,6 +134,14 @@ export class ToppingControllers {
             );
 
             this.logger.info("Topping Updated", { id: updatedTopping._id });
+
+            await this.broker.sendMessage(
+                "topping",
+                JSON.stringify({
+                    id: updatedTopping?._id,
+                    price: updatedTopping?.price,
+                }),
+            );
 
             res.json({ id: updatedTopping._id });
         } catch (error) {
