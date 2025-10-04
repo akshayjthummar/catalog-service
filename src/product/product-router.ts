@@ -11,15 +11,18 @@ import createHttpError from "http-errors";
 import createProductValidator from "./create-product-validator";
 import updateProductValidatorCopy from "./update-product-validator copy";
 import logger from "../config/logger";
+import { createMessageProducerBroker } from "../common/factories/brokerFactorie";
 
 const router = Router();
 
 const productService = new ProductService();
 const s3Storage = new S3Storage();
+const broker = createMessageProducerBroker();
 const productController = new ProductController(
     productService,
     s3Storage,
     logger,
+    broker,
 );
 
 router.post(

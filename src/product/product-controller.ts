@@ -11,12 +11,14 @@ import mongoose from "mongoose";
 import { Logger } from "winston";
 import { AuthRequest } from "../common/types";
 import { Roles } from "../common/constants";
+import { MessageProducerBroker } from "../common/types/broker";
 
 export class ProductController {
     constructor(
         private productService: ProductService,
         private storage: FileStorage,
         private logger: Logger,
+        private broker: MessageProducerBroker,
     ) {}
     create = async (
         req: Request,
@@ -66,6 +68,16 @@ export class ProductController {
 
         const newProduct = await this.productService.createProduct(product);
         this.logger.info("Product Created", { id: newProduct?._id });
+
+        // send Product to kafka
+        await this.broker.sendMessage(
+            "product",
+            JSON.stringify({
+                id: newProduct?._id,
+                priceConfiguration: newProduct?.priceConfiguration,
+            }),
+        );
+
         res.json({ id: newProduct?._id });
     };
 
@@ -144,6 +156,15 @@ export class ProductController {
         const updatedProduct = await this.productService.updateProduct(
             productId,
             productToUpdate as Product,
+        );
+
+        // send Product to kafka
+        await this.broker.sendMessage(
+            "product",
+            JSON.stringify({
+                id: updatedProduct?._id,
+                priceConfiguration: updatedProduct?.priceConfiguration,
+            }),
         );
 
         this.logger.info("Product Updated", { id: updatedProduct?._id });
