@@ -12,6 +12,7 @@ import { Logger } from "winston";
 import { AuthRequest } from "../common/types";
 import { Roles } from "../common/constants";
 import { MessageProducerBroker } from "../common/types/broker";
+import { mapToObject, toMapFromUnknown } from "../utils";
 
 export class ProductController {
     constructor(
@@ -74,7 +75,9 @@ export class ProductController {
             "product",
             JSON.stringify({
                 id: newProduct?._id,
-                priceConfiguration: newProduct?.priceConfiguration,
+                priceConfiguration: mapToObject(
+                    toMapFromUnknown(newProduct?.priceConfiguration),
+                ),
             }),
         );
 
@@ -163,7 +166,9 @@ export class ProductController {
             "product",
             JSON.stringify({
                 id: updatedProduct?._id,
-                priceConfiguration: updatedProduct?.priceConfiguration,
+                priceConfiguration: mapToObject(
+                    toMapFromUnknown(updatedProduct?.priceConfiguration),
+                ),
             }),
         );
 
