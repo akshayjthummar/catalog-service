@@ -4,7 +4,7 @@ import { ToppingSevice } from "./topping-service";
 import { Logger } from "winston";
 import { bufferToArrayBuffer, FileStorage } from "../common/types/storage";
 import { NextFunction, Request, Response } from "express";
-import { Topping } from "./topping-types";
+import { Topping, ToppingEvents } from "./topping-types";
 import { v4 as uuidV4 } from "uuid";
 import { UploadedFile } from "express-fileupload";
 import mongoose from "mongoose";
@@ -69,8 +69,12 @@ export class ToppingControllers {
             await this.broker.sendMessage(
                 "topping",
                 JSON.stringify({
-                    id: topping?._id,
-                    price: topping?.price,
+                    event_type: ToppingEvents.TOPPING_CREATE,
+                    data: {
+                        id: topping?._id,
+                        price: topping?.price,
+                        tenantId: topping?.tenantId,
+                    },
                 }),
             );
 
@@ -138,8 +142,12 @@ export class ToppingControllers {
             await this.broker.sendMessage(
                 "topping",
                 JSON.stringify({
-                    id: updatedTopping?._id,
-                    price: updatedTopping?.price,
+                    event_type: ToppingEvents.TOPPING_UPDATE,
+                    data: {
+                        id: updatedTopping?._id,
+                        price: updatedTopping?.price,
+                        tenantId: updatedTopping?.tenantId,
+                    },
                 }),
             );
 
