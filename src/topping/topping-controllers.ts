@@ -66,16 +66,19 @@ export class ToppingControllers {
 
             this.logger.info("Topping created", { id: topping._id });
 
+            const brokerMessage = {
+                event_type: ToppingEvents.TOPPING_CREATE,
+                data: {
+                    id: topping?._id,
+                    price: topping?.price,
+                    tenantId: topping?.tenantId,
+                },
+            };
+            // send Topping to kafka
             await this.broker.sendMessage(
                 "topping",
-                JSON.stringify({
-                    event_type: ToppingEvents.TOPPING_CREATE,
-                    data: {
-                        id: topping?._id,
-                        price: topping?.price,
-                        tenantId: topping?.tenantId,
-                    },
-                }),
+                JSON.stringify(brokerMessage),
+                topping?._id?.toString(),
             );
 
             res.json(topping);
@@ -139,16 +142,19 @@ export class ToppingControllers {
 
             this.logger.info("Topping Updated", { id: updatedTopping._id });
 
+            const brokerMessage = {
+                event_type: ToppingEvents.TOPPING_UPDATE,
+                data: {
+                    id: updatedTopping?._id,
+                    price: updatedTopping?.price,
+                    tenantId: updatedTopping?.tenantId,
+                },
+            };
+            // send topping to kafka
             await this.broker.sendMessage(
                 "topping",
-                JSON.stringify({
-                    event_type: ToppingEvents.TOPPING_UPDATE,
-                    data: {
-                        id: updatedTopping?._id,
-                        price: updatedTopping?.price,
-                        tenantId: updatedTopping?.tenantId,
-                    },
-                }),
+                JSON.stringify(brokerMessage),
+                updatedTopping?._id?.toString(),
             );
 
             res.json({ id: updatedTopping._id });
@@ -220,6 +226,19 @@ export class ToppingControllers {
             if (deletedTopping.image) {
                 await this.storage.delete(deletedTopping.image);
             }
+
+            const brokerMessage = {
+                event_type: ToppingEvents.TOPPING_DELETE,
+                data: {
+                    id: deletedTopping?._id,
+                },
+            };
+            // send topping to kafka
+            await this.broker.sendMessage(
+                "topping",
+                JSON.stringify(brokerMessage),
+                deletedTopping?._id?.toString(),
+            );
 
             this.logger.info("Topping deleted", { id: deletedTopping._id });
 

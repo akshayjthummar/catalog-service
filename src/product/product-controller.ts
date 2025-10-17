@@ -3,7 +3,7 @@ import { Request } from "express-jwt";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
 import { ProductService } from "./product-service";
-import { Filter, Product } from "./product-types";
+import { Filter, Product, ProductEvents } from "./product-types";
 import { bufferToArrayBuffer, FileStorage } from "../common/types/storage";
 import { v4 as uuidv4 } from "uuid";
 import { UploadedFile } from "express-fileupload";
@@ -70,15 +70,20 @@ export class ProductController {
         const newProduct = await this.productService.createProduct(product);
         this.logger.info("Product Created", { id: newProduct?._id });
 
-        // send Product to kafka
-        await this.broker.sendMessage(
-            "product",
-            JSON.stringify({
+        const brokerMessage = {
+            event_type: ProductEvents.PRODUCT_CREATE,
+            data: {
                 id: newProduct?._id,
                 priceConfiguration: mapToObject(
                     toMapFromUnknown(newProduct?.priceConfiguration),
                 ),
-            }),
+            },
+        };
+        // send Product to kafka
+        await this.broker.sendMessage(
+            "product",
+            JSON.stringify(brokerMessage),
+            newProduct?._id?.toString(),
         );
 
         res.json({ id: newProduct?._id });
@@ -161,15 +166,20 @@ export class ProductController {
             productToUpdate as Product,
         );
 
-        // send Product to kafka
-        await this.broker.sendMessage(
-            "product",
-            JSON.stringify({
+        const brokerMessage = {
+            event_type: ProductEvents.PRODUCT_UPDATE,
+            data: {
                 id: updatedProduct?._id,
                 priceConfiguration: mapToObject(
                     toMapFromUnknown(updatedProduct?.priceConfiguration),
                 ),
-            }),
+            },
+        };
+        // send Product to kafka
+        await this.broker.sendMessage(
+            "product",
+            JSON.stringify(brokerMessage),
+            updatedProduct?._id?.toString(),
         );
 
         this.logger.info("Product Updated", { id: updatedProduct?._id });
@@ -250,6 +260,19 @@ export class ProductController {
         if (deletedProduct.image) {
             await this.storage.delete(deletedProduct.image);
         }
+
+        const brokerMessage = {
+            event_type: ProductEvents.PRODUCT_DELETE,
+            data: {
+                id: deletedProduct?._id,
+            },
+        };
+        // send Product to kafka
+        await this.broker.sendMessage(
+            "product",
+            JSON.stringify(brokerMessage),
+            deletedProduct?._id?.toString(),
+        );
 
         this.logger.info("Product deleted", { id: productId });
 
