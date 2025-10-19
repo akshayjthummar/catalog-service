@@ -11,7 +11,7 @@ const app = express();
 
 const ALLOWED_DOMAINS = [
     config.get("domain.ADMIN_UI_DOMAIN"),
-    config.get("domain.CLIENT_UI_DOMAINL"),
+    config.get("domain.CLIENT_UI_DOMAIN"),
 ];
 
 app.use(cors({ origin: ALLOWED_DOMAINS as string[], credentials: true }));
